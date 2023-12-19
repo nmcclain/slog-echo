@@ -49,6 +49,7 @@ type Config struct {
 	WithResponseHeader bool
 	WithSpanID         bool
 	WithTraceID        bool
+	WithIP             bool
 
 	Filters []Filter
 }
@@ -71,6 +72,7 @@ func New(logger *slog.Logger) echo.MiddlewareFunc {
 		WithResponseHeader: false,
 		WithSpanID:         false,
 		WithTraceID:        false,
+		WithIP:             true,
 
 		Filters: []Filter{},
 	})
@@ -94,6 +96,7 @@ func NewWithFilters(logger *slog.Logger, filters ...Filter) echo.MiddlewareFunc 
 		WithResponseHeader: false,
 		WithSpanID:         false,
 		WithTraceID:        false,
+		WithIP:             true,
 
 		Filters: filters,
 	})
@@ -157,7 +160,9 @@ func NewWithConfig(logger *slog.Logger, config Config) echo.MiddlewareFunc {
 				slog.String("path", path),
 				slog.String("route", route),
 				slog.Int("status", status),
-				slog.String("ip", ip),
+			}
+			if config.WithIP {
+				attributes = append(attributes, slog.String("ip", ip))
 			}
 
 			xForwardedFor, ok := c.Get(echo.HeaderXForwardedFor).(string)
