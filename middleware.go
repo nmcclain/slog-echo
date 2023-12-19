@@ -50,6 +50,7 @@ type Config struct {
 	WithSpanID         bool
 	WithTraceID        bool
 	WithIP             bool
+	WithEndTime        bool
 
 	Filters []Filter
 }
@@ -73,6 +74,7 @@ func New(logger *slog.Logger) echo.MiddlewareFunc {
 		WithSpanID:         false,
 		WithTraceID:        false,
 		WithIP:             true,
+		WithEndTime:        true,
 
 		Filters: []Filter{},
 	})
@@ -97,6 +99,7 @@ func NewWithFilters(logger *slog.Logger, filters ...Filter) echo.MiddlewareFunc 
 		WithSpanID:         false,
 		WithTraceID:        false,
 		WithIP:             true,
+		WithEndTime:        true,
 
 		Filters: filters,
 	})
@@ -154,7 +157,6 @@ func NewWithConfig(logger *slog.Logger, config Config) echo.MiddlewareFunc {
 			}
 
 			attributes := []slog.Attr{
-				slog.Time("time", end),
 				slog.Duration("latency", latency),
 				slog.String("method", method),
 				slog.String("path", path),
@@ -163,6 +165,9 @@ func NewWithConfig(logger *slog.Logger, config Config) echo.MiddlewareFunc {
 			}
 			if config.WithIP {
 				attributes = append(attributes, slog.String("ip", ip))
+			}
+			if config.WithEndTime {
+				attributes = append(attributes, slog.Time("time", end))
 			}
 
 			xForwardedFor, ok := c.Get(echo.HeaderXForwardedFor).(string)
